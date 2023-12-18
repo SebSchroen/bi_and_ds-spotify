@@ -34,7 +34,7 @@ playlists <- categories %>%
 playlist_ids <- playlists %>% 
   pull(id)
 
-category_songs <- foreach(i = playlist_ids, .combine = "rbind") %do% {
+category_songs <- foreach(i = playlist_ids, .combine = "rbind", .errorhandling = "remove") %do% {
   
   out <- get_playlist_tracks(playlist_id = i)
   title <- playlists %>% 
@@ -58,7 +58,10 @@ category_songs <- foreach(i = playlist_ids, .combine = "rbind") %do% {
     mutate(playlist.id = i,
            category = title)
   
-  Sys.sleep(2)
+  Sys.sleep(1)
   out
   
 }
+
+
+
