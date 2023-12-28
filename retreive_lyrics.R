@@ -76,9 +76,8 @@ rap <- final %>%
   filter(category == "Hip-Hop")
 
 others <- final %>% 
-  filter(category %in% c("Rock", "Megal", "Pop", "Indie")) %>% 
-  slice_sample(n = 50) %>% 
-  mutate(category = "Other")
+  filter(category %in% c("Rock", "Metal", "Pop", "Indie")) %>% 
+  slice_sample(n = 50)
 
 saveRDS(rbind(rap, others), "cleandata/rap_genre_example.RDS")
 
