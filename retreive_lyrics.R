@@ -68,15 +68,19 @@ final <- test_sample %>%
   mutate(track.duration_min = track.duration_ms/60000,
          words_per_minute = n_words/track.duration_min)
 
+saveRDS(final, "rawdata/example_lyrics.RDS")
 
 
-saveRDS(final, "rawdata/rap_genre_example.RDS")
 
-final %>% 
-  group_by(category)  %>% 
-  count()
+rap <- final %>% 
+  filter(category == "Hip-Hop")
 
-ggplot(final, aes(x = category, y = words_per_minute)) + geom_boxplot()  
+others <- final %>% 
+  filter(category %in% c("Rock", "Megal", "Pop", "Indie")) %>% 
+  slice_sample(n = 50) %>% 
+  mutate(category = "Other")
+
+saveRDS(rbind(rap, others), "cleandata/rap_genre_example.RDS")
 
 
 
