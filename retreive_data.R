@@ -16,7 +16,7 @@ category_ids <- categories %>%
 
 category_playlists <- foreach(id = category_ids, .combine = "rbind") %do% {
   
-  tmp <- get_category_playlists(category_id = id, limit = 20, country = "DE", include_meta_info = FALSE)
+  tmp <- get_category_playlists(category_id = id, limit = 5, country = "DE", include_meta_info = FALSE)
   
   tmp$category_id = id
   tmp
@@ -64,4 +64,4 @@ category_songs <- foreach(i = playlist_ids, .combine = "rbind", .errorhandling =
 }
 
 
-
+saveRDS(category_songs, "rawdata/small_sample.RDS")
