@@ -16,7 +16,7 @@ category_ids <- categories %>%
 
 category_playlists <- foreach(id = category_ids, .combine = "rbind") %do% {
   
-  tmp <- get_category_playlists(category_id = id, limit = 5, country = "DE", include_meta_info = FALSE)
+  tmp <- get_category_playlists(category_id = id, limit = 25, country = "DE", include_meta_info = FALSE)
   
   tmp$category_id = id
   tmp
@@ -34,7 +34,11 @@ playlists <- categories %>%
 playlist_ids <- playlists %>% 
   pull(id)
 
-category_songs <- foreach(i = playlist_ids, .combine = "rbind", .errorhandling = "remove") %do% {
+cl <- parallel::makeCluster(6)
+doParallel::registerDoParallel(cl)
+
+category_songs <- foreach(i = playlist_ids, .combine = "rbind", .errorhandling = "remove",
+                          .packages = c("tidyverse", "spotifyr")) %dopar% {
   
   out <- get_playlist_tracks(playlist_id = i)
   title <- playlists %>% 
@@ -64,4 +68,4 @@ category_songs <- foreach(i = playlist_ids, .combine = "rbind", .errorhandling =
 }
 
 
-saveRDS(category_songs, "rawdata/small_sample.RDS")
+saveRDS(category_songs, "rawdata/category_songs.RDS")

@@ -10,20 +10,28 @@ library(tokenizers)
 
 
 
-category_songs <- readRDS("rawdata/small_sample.RDS") %>% 
+category_songs <- readRDS("rawdata/category_songs.RDS") %>% 
   distinct()
 category_songs %>% 
   summarise(n = n(), .by = category)
-test_sample <- slice_sample(category_songs, n = 100, by = category ) %>% 
+test_sample <- category_songs %>% 
   select(track.name, track.artist, category, track.duration_ms)
 
+test_sample_songs <-
+  test_sample %>% 
+  distinct(track.name, track.artist)
 library(foreach)
 
-lyrics <- foreach(i = 1:nrow(test_sample), .combine = "rbind", .errorhandling = "remove") %do% {
+cl <- parallel::makeCluster(6)
+doParallel::registerDoParallel(cl)
+
+lyrics <- foreach(i = 1:nrow(test_sample_songs), .combine = "rbind", 
+                  .errorhandling = "remove",
+                  .packages = c("tidyverse", "geniusr", "tokenizers", "tidytext")) %dopar% {
   
 
   
-  song_tmp <- test_sample[i,]
+  song_tmp <- test_sample_songs[i,]
   
   lyrics_tmp <- get_lyrics_search(artist_name = song_tmp$track.artist,
                                   song_title = song_tmp$track.name) %>% 
@@ -35,7 +43,7 @@ lyrics <- foreach(i = 1:nrow(test_sample), .combine = "rbind", .errorhandling = 
   tokens <- tibble(tokens = tokenize_words(lyrics_tmp, simplify = TRUE)) %>% 
     nest()
   
-  n_words <- unnest(tokens) %>% 
+  n_words <- unnest(tokens, cols = c(data)) %>% 
     nrow()
   
   sentiment <- tokens %>% unnest(data)  %>% 
@@ -55,11 +63,12 @@ lyrics <- foreach(i = 1:nrow(test_sample), .combine = "rbind", .errorhandling = 
                    n_words =  n_words) %>% 
     cbind(sentiment)
   print(i/nrow(test_sample))
+  Sys.sleep(1)
   return(output)
 }
 
 
-saveRDS(lyrics, "rawdata/sample_lyrics.RDS")
+saveRDS(lyrics, "rawdata/category_sample_lyrics.RDS")
 lyrics_unique <- distinct(lyrics)
 
 final <- test_sample %>% 
@@ -68,18 +77,8 @@ final <- test_sample %>%
   mutate(track.duration_min = track.duration_ms/60000,
          words_per_minute = n_words/track.duration_min)
 
-saveRDS(final, "rawdata/example_lyrics.RDS")
+saveRDS(final, "cleandata/example_data_lyrics.RDS")
 
-
-
-rap <- final %>% 
-  filter(category == "Hip-Hop")
-
-others <- final %>% 
-  filter(category %in% c("Rock", "Metal", "Pop", "Indie")) %>% 
-  slice_sample(n = 50)
-
-saveRDS(rbind(rap, others), "cleandata/rap_genre_example.RDS")
 
 
 
