@@ -68,7 +68,7 @@ user_playlist_songs <- readRDS("cleandata/user_playlist_songs.RDS") %>%
 
 
 user_playlist_songs %>% 
-  saveRDS("cleandata/example_data_assosiaction_rule.RDS")
+  saveRDS("cleandata/example_data_association_rule.RDS")
 
 
 
@@ -86,7 +86,6 @@ timeline <- user_playlist_songs %>%
   summarise(n = n())%>%
   filter(date >= "1945-01-01")
 
-%>% 
 
   ggplot(., aes(x = date, y = n)) + geom_line()
   
