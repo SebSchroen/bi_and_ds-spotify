@@ -59,12 +59,13 @@ user_playlist_songs <- foreach(i = playlist_ids, .combine = "rbind", .errorhandl
                             out
                             
                           }
-
+library(tidyverse)
 
 saveRDS(user_playlist_songs, "cleandata/user_playlist_songs.RDS")
 user_playlist_songs <- readRDS("cleandata/user_playlist_songs.RDS") %>% 
-  mutate(date = as_date(track.album.release_date)) %>% 
-  filter(date <= "2018-12-31" & date >= "1985-01-01")
+  mutate(track.album.release_date = as_date(track.album.release_date)) %>% 
+  filter(date <= "2018-12-31" & date >= "1985-01-01") %>% 
+  select(track.id, track.name, track.artist, track.artist.id, track.playlist.id, track.album.release_date) 
 
 
 user_playlist_songs %>% 
