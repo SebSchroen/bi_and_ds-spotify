@@ -64,8 +64,8 @@ library(tidyverse)
 saveRDS(user_playlist_songs, "cleandata/user_playlist_songs.RDS")
 user_playlist_songs <- readRDS("cleandata/user_playlist_songs.RDS") %>% 
   mutate(track.album.release_date = as_date(track.album.release_date)) %>% 
-#  filter(track.album.release_date <= "2018-12-31" & track.album.release_date >= "1985-01-01") %>% 
-  select(track.id, track.name, track.artist, track.artist.id, playlist.id, track.album.release_date) 
+  filter(date <= "2018-12-31" & date >= "1985-01-01") %>% 
+  select(track.id, track.name, track.artist, track.artist.id, track.playlist.id, track.album.release_date) 
 
 
 user_playlist_songs %>% 
@@ -88,8 +88,7 @@ timeline <- user_playlist_songs %>%
   filter(date >= "1945-01-01")
 
 
-  
-ggplot(., aes(x = date, y = n)) + geom_line()
+  ggplot(., aes(x = date, y = n)) + geom_line()
   
 user_playlist_songs %>% 
 
@@ -111,8 +110,8 @@ user_playlist_songs %>%
 
   playlist_artists <- user_playlist_songs %>% 
   #  filter(playlist.id %in% small_playlists) %>% 
-  #  filter(date <= "2018-12-31" & date >= "1985-01-01") %>% 
-  #  mutate(song = paste(track.artist, track.name, sep = "-")) %>% 
+    filter(date <= "2018-12-31" & date >= "1985-01-01") %>% 
+    mutate(song = paste(track.artist, track.name, sep = "-")) %>% 
     distinct(track.artist, playlist.id) %>% 
     group_by(track.artist) %>% 
     mutate(count = n()) %>% 
@@ -121,20 +120,19 @@ user_playlist_songs %>%
     ungroup()
 
   
-  library(arules)
+  
   trans <- transactions(playlist_artists, cols = c("playlist.id", "track.artist"), format = "long")
   itemLabels(trans)
   dim(trans)
-  1/1635
-  frequencies <- itemFrequency(trans)
-  summary(frequencies)
+  
+  
   rules <- apriori(trans, 
-                   parameter = list(supp=0.01, conf=0.7, maxlen=2,
+                   parameter = list(supp=0.01, conf=0.5, maxlen=3,
                                     target= "rules"))
   inspect(rules, by = "lift", control = list(n = 10))
   library(arulesViz)
   plot(rules, method = "grouped", limit = 25)
-  plot(rules, method = "graph", engine = "html", max = 300)
+  plot(rules, method = "graph", limit = 10)
   
   
   
